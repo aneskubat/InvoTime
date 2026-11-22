@@ -1,0 +1,37 @@
+name: InvoTime CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build-and-test:
+    name: Build, JUnit 5 Testovi i JAR Pakovanje
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Preuzimanje koda iz repozitorija
+        uses: actions/checkout@v4
+
+      - name: Postavka JDK 25 (Eclipse Temurin) i Maven keša
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '25'
+          cache: 'maven'
+
+      - name: Pokretanje JUnit 5 testova (mvn clean test)
+        run: mvn clean test
+
+      - name: Pakovanje aplikacije u JAR (mvn package)
+        run: mvn package -DskipTests
+
+      - name: Čuvanje generisanog JAR artefakta
+        uses: actions/upload-artifact@v4
+        with:
+          name: invotime-1.0.0-jar
+          path: target/invotime-*.jar
+          if-no-files-found: error
